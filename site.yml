@@ -1,0 +1,25 @@
+---
+# Playbook único: lo usan tanto el modo push (equipos físicos)
+# como el modo pull (VM, vía scripts/aulas-update).
+- name: Software de las aulas de informática
+  hosts: all
+  become: true
+
+  pre_tasks:
+    - name: Comprobar que la distribución está soportada
+      ansible.builtin.assert:
+        that: ansible_facts['os_family'] in ['Debian', 'RedHat']
+        fail_msg: "Familia {{ ansible_facts['os_family'] }} no soportada"
+        quiet: true
+      tags: always
+
+  roles:
+    # Comunes: sin tags para que se deduplican con las dependencias (meta/main.yml)
+    # de cada asignatura; así `--tags asig_x` también los ejecuta.
+    - base
+    - python
+    # --- Asignaturas (se instalan todas en todas las máquinas) ---
+    - role: asig_programacion
+      tags: [asig_programacion]
+    - role: asig_metodos_numericos
+      tags: [asig_metodos_numericos]

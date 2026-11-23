@@ -1,0 +1,14 @@
+---
+# Raíz de todo lo que instalamos fuera del gestor de paquetes
+aulas_root: /opt/aulas
+
+# --- uv / Python (rol python) ---
+uv_version: "0.13.9"
+uv_install_dir: "{{ aulas_root }}/uv-{{ uv_version }}"
+python_install_dir: "{{ aulas_root }}/python"   # UV_PYTHON_INSTALL_DIR
+venvs_dir: "{{ aulas_root }}/venvs"
+# Versiones de Python disponibles para todas las asignaturas (y para los alumnos)
+python_versions:
+  - "3.12"
+  - "3.13"
+python_default: "3.12"

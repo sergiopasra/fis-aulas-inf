@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+# Los alumnos usan los mismos Python gestionados que las asignaturas:
+#   uv venv --python {{ python_default }} ~/mi-entorno
+export UV_PYTHON_INSTALL_DIR="{{ python_install_dir }}"
+export UV_PYTHON_PREFERENCE=managed

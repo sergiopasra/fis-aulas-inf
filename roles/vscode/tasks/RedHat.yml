@@ -1,0 +1,13 @@
+---
+- name: Repositorio dnf de VS Code
+  ansible.builtin.yum_repository:
+    name: vscode
+    description: Visual Studio Code
+    baseurl: https://packages.microsoft.com/yumrepos/vscode
+    gpgcheck: true
+    gpgkey: https://packages.microsoft.com/keys/microsoft.asc
+
+- name: Instalar VS Code
+  ansible.builtin.dnf:
+    name: code
+    state: present

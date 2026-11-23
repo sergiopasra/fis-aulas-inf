@@ -1,0 +1,29 @@
+---
+# Mapa ÚNICO de nombres lógicos -> nombre(s) real(es) del paquete por familia.
+# Las asignaturas solo usan nombres lógicos (roles/syspkgs).
+# - Si un nombre no aparece aquí, se usa tal cual en todas las distros.
+# - El valor puede ser un string, una lista, o [] si no aplica en esa familia.
+pkg_map:
+  # En EL9+ suele venir curl-minimal, que entra en conflicto con "curl";
+  # cualquiera de los dos da /usr/bin/curl y viene en la instalación base.
+  curl:
+    Debian: curl
+    RedHat: []
+  build-tools:
+    Debian: [build-essential]
+    RedHat: [gcc, gcc-c++, make]
+  gfortran:
+    Debian: gfortran
+    RedHat: gcc-gfortran
+  lapack-dev:
+    Debian: [liblapack-dev, libblas-dev]
+    RedHat: [lapack-devel, blas-devel]
+  gnuplot:
+    Debian: gnuplot
+    RedHat: gnuplot
+  ssl-dev:
+    Debian: libssl-dev
+    RedHat: openssl-devel
+  python3-venv:
+    Debian: python3-venv
+    RedHat: []

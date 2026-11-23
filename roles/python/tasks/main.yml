@@ -1,0 +1,52 @@
+---
+# Instala uv (binario oficial, independiente de la distro) y las versiones
+# de Python de python_versions en python_install_dir.
+
+- name: Directorios de uv, Python y venvs
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ uv_install_dir }}"
+    - "{{ python_install_dir }}"
+    - "{{ venvs_dir }}"
+    - "{{ python_specs_dir }}"
+
+- name: Descargar uv {{ uv_version }}
+  ansible.builtin.get_url:
+    url: "{{ python_uv_url }}"
+    checksum: "sha256:{{ python_uv_url }}.sha256"
+    dest: "{{ uv_install_dir }}/uv.tar.gz"
+    mode: "0644"
+
+- name: Desempaquetar uv
+  ansible.builtin.unarchive:
+    src: "{{ uv_install_dir }}/uv.tar.gz"
+    dest: "{{ uv_install_dir }}"
+    remote_src: true
+    extra_opts: [--strip-components=1]
+    creates: "{{ uv_install_dir }}/uv"
+
+- name: Enlazar uv y uvx en /usr/local/bin
+  ansible.builtin.file:
+    src: "{{ uv_install_dir }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    force: true
+  loop: [uv, uvx]
+
+- name: Variables de uv para todos los usuarios
+  ansible.builtin.template:
+    src: aulas-uv.sh.j2
+    dest: /etc/profile.d/aulas-uv.sh
+    mode: "0644"
+
+- name: Instalar las versiones de Python
+  ansible.builtin.command: "{{ python_uv }} python install --no-bin {{ item }}"
+  environment: "{{ python_uv_env }}"
+  loop: "{{ python_versions }}"
+  register: python_install
+  changed_when: "'Installed' in python_install.stderr"

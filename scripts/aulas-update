@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Descarga la última versión de los playbooks y los aplica en esta máquina.
+# Uso:  sudo aulas-update [opciones extra de ansible-pull]
+#   sudo aulas-update                              # todo
+#   sudo aulas-update --tags asig_metodos_numericos  # solo una asignatura
+#   sudo aulas-update --check --diff               # simulación
+set -euo pipefail
+
+CONF=/etc/aulas/pull.conf
+KEY=/etc/aulas/deploy_key
+DEST=/var/lib/aulas/repo
+LOG=/var/log/aulas-update.log
+
+[[ $EUID -eq 0 ]] || exec sudo "$0" "$@"
+[[ -r $CONF ]] || { echo "Falta $CONF: ejecuta antes bootstrap-pull.sh" >&2; exit 1; }
+# shellcheck source=/dev/null
+source "$CONF"
+
+install -d -m 0700 "$(dirname "$DEST")"
+export PATH=/usr/local/bin:$PATH
+# ansible-pull limita internamente al hostname; evita avisos inocuos
+export ANSIBLE_HOST_PATTERN_MISMATCH=ignore
+[[ -t 1 ]] && export ANSIBLE_FORCE_COLOR=1   # colores solo en terminal (no en el log)
+
+{
+    echo "===== $(date -Is) aulas-update $* ====="
+    ansible-pull \
+        --url "$REPO_URL" \
+        --checkout "$BRANCH" \
+        --directory "$DEST" \
+        --private-key "$KEY" \
+        --accept-host-key \
+        --clean \
+        --inventory localhost, \
+        --limit localhost \
+        -e ansible_python_interpreter=/usr/bin/python3 \
+        "$@" \
+        site.yml
+} 2>&1 | tee -a "$LOG"
+exit "${PIPESTATUS[0]}"

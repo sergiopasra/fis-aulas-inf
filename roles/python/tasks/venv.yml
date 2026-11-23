@@ -1,0 +1,90 @@
+---
+# ÚNICA forma de crear un entorno Python de asignatura.
+# Uso:
+#   - ansible.builtin.include_role:
+#       name: python
+#       tasks_from: venv
+#     vars:
+#       python_venv_name: metodos
+#       python_venv_python: "3.12"            # opcional (python_default)
+#       python_venv_packages: [numpy, scipy]  # admite especificadores: "numpy>=2"
+#       python_venv_jupyter_kernel: true      # opcional
+- name: Validar parámetros del venv
+  ansible.builtin.assert:
+    that:
+      - python_venv_name is defined
+      - python_venv_name is match('^[A-Za-z0-9_.-]+$')
+      - python_venv_python in python_versions
+    fail_msg: "python_venv_name obligatorio y python_venv_python debe estar en python_versions"
+    quiet: true
+
+- name: Variables del venv {{ python_venv_name }}
+  ansible.builtin.set_fact:
+    python_venv_dir: "{{ venvs_dir }}/{{ python_venv_name }}"
+    python_venv_spec_in: "{{ python_specs_dir }}/{{ python_venv_name }}.in"
+    python_venv_spec_lock: "{{ python_specs_dir }}/{{ python_venv_name }}.txt"
+    python_venv_all_pkgs: "{{ (python_venv_packages + (['ipykernel'] if python_venv_jupyter_kernel else [])) | unique }}"
+
+- name: Versión de Python del venv {{ python_venv_name }}
+  ansible.builtin.copy:
+    content: "{{ python_venv_python }}\n"
+    dest: "{{ python_specs_dir }}/{{ python_venv_name }}.python"
+    mode: "0644"
+  register: python_venv_marker
+
+- name: Comprobar si existe el venv {{ python_venv_name }}
+  ansible.builtin.stat:
+    path: "{{ python_venv_dir }}/bin/python"
+  register: python_venv_stat
+
+- name: Crear (o recrear) el venv {{ python_venv_name }}
+  ansible.builtin.command: >-
+    {{ python_uv }} venv --clear --python {{ python_venv_python }}
+    --prompt {{ python_venv_name }} {{ python_venv_dir }}
+  environment: "{{ python_uv_env }}"
+  when: python_venv_marker.changed or not python_venv_stat.stat.exists
+  register: python_venv_created
+  changed_when: true
+
+- name: Lista de paquetes del venv {{ python_venv_name }}
+  ansible.builtin.template:
+    src: requirements.in.j2
+    dest: "{{ python_venv_spec_in }}"
+    mode: "0644"
+  register: python_venv_spec_result
+
+- name: Resolver e instalar paquetes del venv {{ python_venv_name }}
+  when: python_venv_spec_result.changed or python_venv_created.changed
+  block:
+    - name: Resolver dependencias (uv pip compile)
+      ansible.builtin.command: >-
+        {{ python_uv }} pip compile --quiet --no-header
+        --python {{ python_venv_dir }}/bin/python
+        {{ python_venv_spec_in }} -o {{ python_venv_spec_lock }}
+      environment: "{{ python_uv_env }}"
+      changed_when: true
+
+    - name: Sincronizar el venv (uv pip sync)
+      ansible.builtin.command: >-
+        {{ python_uv }} pip sync --python {{ python_venv_dir }}/bin/python
+        {{ python_venv_spec_lock }}
+      environment: "{{ python_uv_env }}"
+      changed_when: true
+  rescue:
+    - name: Invalidar la especificación para reintentar en la próxima ejecución
+      ansible.builtin.file:
+        path: "{{ python_venv_spec_in }}"
+        state: absent
+
+    - name: Fallo instalando el venv
+      ansible.builtin.fail:
+        msg: "No se pudo instalar el venv {{ python_venv_name }}: {{ ansible_failed_result.stderr | default(ansible_failed_result.msg) }}"
+
+- name: Registrar kernel de Jupyter para {{ python_venv_name }}
+  ansible.builtin.command: >-
+    {{ python_venv_dir }}/bin/python -m ipykernel install
+    --prefix /usr/local --name {{ python_venv_name }}
+    --display-name "{{ python_venv_display_name }}"
+  args:
+    creates: "{{ python_kernels_dir }}/{{ python_venv_name | lower }}/kernel.json"
+  when: python_venv_jupyter_kernel

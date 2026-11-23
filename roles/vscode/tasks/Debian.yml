@@ -1,0 +1,17 @@
+---
+- name: Repositorio apt de VS Code
+  ansible.builtin.deb822_repository:
+    name: vscode
+    types: [deb]
+    uris: https://packages.microsoft.com/repos/code
+    suites: [stable]
+    components: [main]
+    architectures: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_facts['architecture']] }}"
+    signed_by: https://packages.microsoft.com/keys/microsoft.asc
+  register: vscode_repo
+
+- name: Instalar VS Code
+  ansible.builtin.apt:
+    name: code
+    state: present
+    update_cache: "{{ vscode_repo is changed }}"

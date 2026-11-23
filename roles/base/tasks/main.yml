@@ -1,0 +1,17 @@
+---
+- name: Preparación específica de la familia {{ ansible_facts['os_family'] }}
+  ansible.builtin.include_tasks: "{{ ansible_facts['os_family'] }}.yml"
+
+- name: Paquetes básicos comunes
+  ansible.builtin.include_role:
+    name: syspkgs
+  vars:
+    syspkgs_names: "{{ base_packages }}"
+
+- name: Directorio raíz de las aulas
+  ansible.builtin.file:
+    path: "{{ aulas_root }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"

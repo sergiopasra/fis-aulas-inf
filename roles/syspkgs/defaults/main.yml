@@ -1,0 +1,4 @@
+---
+# Lista de nombres lógicos a instalar (ver group_vars/all/packages.yml)
+syspkgs_names: []
+syspkgs_state: present

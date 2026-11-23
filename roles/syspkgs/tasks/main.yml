@@ -1,0 +1,19 @@
+---
+# ÚNICA forma de instalar paquetes del sistema.
+# Traduce nombres lógicos con pkg_map según la familia de la distribución.
+- name: Resolver nombres de paquetes para {{ ansible_facts['os_family'] }}
+  ansible.builtin.set_fact:
+    syspkgs_resolved: >-
+      {%- set out = [] -%}
+      {%- for n in syspkgs_names -%}
+        {%- set real = pkg_map.get(n, {}).get(ansible_facts['os_family'], n) -%}
+        {%- if real is string -%}{%- set real = [real] -%}{%- endif -%}
+        {%- set _ = out.extend(real) -%}
+      {%- endfor -%}
+      {{ out | unique }}
+
+- name: Instalar paquetes del sistema
+  ansible.builtin.package:
+    name: "{{ syspkgs_resolved }}"
+    state: "{{ syspkgs_state }}"
+  when: syspkgs_resolved | length > 0

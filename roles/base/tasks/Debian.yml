@@ -1,0 +1,10 @@
+---
+- name: Actualizar la caché de apt
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Requisitos de Ansible en Debian/Ubuntu (repos deb822)
+  ansible.builtin.apt:
+    name: [ca-certificates, python3-debian]
+    state: present

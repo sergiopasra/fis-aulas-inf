@@ -1,0 +1,5 @@
+---
+# Visual Studio Code desde el repositorio oficial de Microsoft.
+# Ejemplo de aplicación de terceros con repositorio distinto por familia.
+- name: VS Code en {{ ansible_facts['os_family'] }}
+  ansible.builtin.include_tasks: "{{ ansible_facts['os_family'] }}.yml"

@@ -1,0 +1,9 @@
+---
+# Nombres lógicos (ver group_vars/all/packages.yml)
+base_packages:
+  - git
+  - curl
+  - tar
+  - gzip
+  - unzip
+  - build-tools

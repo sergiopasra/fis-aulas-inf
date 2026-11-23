@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+# venv: {{ python_venv_name }}  python: {{ python_venv_python }}
+{% for p in python_venv_all_pkgs %}
+{{ p }}
+{% endfor %}

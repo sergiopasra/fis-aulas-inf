@@ -1,0 +1,6 @@
+---
+# Parámetros de tasks_from: venv (los fija cada asignatura)
+python_venv_python: "{{ python_default }}"
+python_venv_packages: []
+python_venv_jupyter_kernel: false
+python_venv_display_name: "{{ python_venv_name }} (Python {{ python_venv_python }})"

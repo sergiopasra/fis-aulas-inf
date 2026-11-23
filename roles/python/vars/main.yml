@@ -1,0 +1,12 @@
+---
+python_uv: /usr/local/bin/uv
+python_uv_triple: "{{ ansible_facts['architecture'] }}-unknown-linux-gnu"
+python_uv_url: "https://github.com/astral-sh/uv/releases/download/{{ uv_version }}/uv-{{ python_uv_triple }}.tar.gz"
+python_specs_dir: "{{ venvs_dir }}/.specs"
+python_kernels_dir: /usr/local/share/jupyter/kernels
+# Entorno común para TODAS las llamadas a uv
+python_uv_env:
+  UV_PYTHON_INSTALL_DIR: "{{ python_install_dir }}"
+  UV_PYTHON_PREFERENCE: only-managed
+  UV_LINK_MODE: copy
+  UV_NO_PROGRESS: "1"
