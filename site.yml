@@ -19,7 +19,5 @@
     - base
     - python
     # --- Asignaturas (se instalan todas en todas las máquinas) ---
-    - role: asig_programacion
-      tags: [asig_programacion]
-    - role: asig_metodos_numericos
-      tags: [asig_metodos_numericos]
+    - role: asig_800520_fisica_computacional
+      tags: [asig_800520_fisica_computacional]

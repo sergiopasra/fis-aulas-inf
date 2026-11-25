@@ -20,8 +20,9 @@ inventories/aulas/hosts.yml   equipos físicos (modo push)
 roles/base                    preparación de la distro y paquetes básicos
 roles/syspkgs                 ÚNICA forma de instalar paquetes del sistema
 roles/python                  ÚNICA forma de instalar Python y entornos (uv)
-roles/vscode                  ejemplo de app con repositorio de terceros
-roles/asig_*                  un rol por asignatura
+roles/julia                   Julia desde los binarios oficiales (versión en group_vars)
+roles/vscode                  VS Code (repositorio de Microsoft); disponible para incluir desde una asignatura
+roles/asig_<codigo>_<nombre>  un rol por asignatura (p. ej. asig_800520_fisica_computacional)
 scripts/bootstrap-pull.sh     preparación (una vez) de una máquina en modo pull
 scripts/aulas-update          actualización manual en modo pull
 tests/run-containers.sh       pruebas en contenedores (Ubuntu 22/26, Alma 9/10)
@@ -32,8 +33,12 @@ inventario) para que se carguen igual en modo push y en modo pull.
 
 ## Añadir una asignatura
 
-1. Copia un rol de ejemplo: `cp -r roles/asig_metodos_numericos roles/asig_nueva`
-   y renombra las variables `asig_metodos_numericos_*` → `asig_nueva_*`.
+Convención de nombres: `asig_<codigo>_<nombre>` (código de la asignatura en el plan
+de estudios, nombre en minúsculas y sin tildes), p. ej. `asig_800520_fisica_computacional`.
+Las variables del rol llevan ese mismo prefijo y el venv se llama `<codigo>_<nombre>`.
+
+1. Copia un rol existente: `cp -r roles/asig_800520_fisica_computacional roles/asig_<codigo>_<nombre>`
+   y renombra las variables `asig_800520_fisica_computacional_*` con el nuevo prefijo.
 2. En `defaults/main.yml` pon:
    - paquetes del sistema con **nombres lógicos**; si el nombre difiere entre
      distros, añádelo a `group_vars/all/packages.yml` (un solo sitio);
@@ -41,18 +46,21 @@ inventario) para que se carguen igual en modo push y en modo pull.
 3. En `tasks/main.yml` usa solo los roles comunes:
    ```yaml
    - ansible.builtin.include_role: { name: syspkgs }
-     vars: { syspkgs_names: "{{ asig_nueva_syspkgs }}" }
+     vars: { syspkgs_names: "{{ asig_<codigo>_<nombre>_syspkgs }}" }
 
    - ansible.builtin.include_role: { name: python, tasks_from: venv }
      vars:
-       python_venv_name: nueva               # -> /opt/aulas/venvs/nueva
+       python_venv_name: <codigo>_<nombre>   # -> /opt/aulas/venvs/<codigo>_<nombre>
        python_venv_python: "3.13"            # opcional; debe estar en python_versions
-       python_venv_packages: "{{ asig_nueva_pypkgs }}"
+       python_venv_packages: "{{ asig_<codigo>_<nombre>_pypkgs }}"
        python_venv_jupyter_kernel: true      # opcional; kernel visible en Jupyter/VS Code
    ```
 4. Mantén en `meta/main.yml` las dependencias `base` y `python` (vienen en la copia):
-   así `--tags asig_nueva` instala también lo común, que se ejecuta una sola vez.
+   así `--tags asig_<codigo>_<nombre>` instala también lo común, que se ejecuta una sola vez.
 5. Añade el rol a `site.yml` con su tag.
+
+Aplicaciones comunes ya disponibles para incluir desde una asignatura:
+`ansible.builtin.include_role: { name: julia }` y `{ name: vscode }`.
 
 Si algo es inevitablemente distinto por distro, usa
 `include_tasks: "{{ ansible_facts['os_family'] }}.yml"` con `Debian.yml` y
@@ -78,7 +86,7 @@ clave SSH del nodo central y `sudo` sin contraseña.
 ```bash
 ansible-playbook site.yml --limit aula1-pc01.example.ucm.es --check --diff   # simular
 ansible-playbook site.yml --limit aula1                                      # un aula
-ansible-playbook site.yml --tags asig_metodos_numericos                      # una asignatura
+ansible-playbook site.yml --tags asig_800520_fisica_computacional            # una asignatura
 ```
 
 ## Modo pull (VM)
@@ -95,7 +103,7 @@ ansible-playbook site.yml --tags asig_metodos_numericos                      # u
 3. Cada vez que se quiera actualizar:
    ```bash
    sudo aulas-update                                # todo
-   sudo aulas-update --tags asig_programacion       # una asignatura
+   sudo aulas-update --tags asig_800520_fisica_computacional   # una asignatura
    sudo aulas-update --check --diff                 # simular
    ```
    El registro queda en `/var/log/aulas-update.log`.

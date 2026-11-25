@@ -12,3 +12,6 @@ python_versions:
   - "3.12"
   - "3.13"
 python_default: "3.12"
+
+# --- Julia (rol julia) ---
+julia_version: "1.13.4"

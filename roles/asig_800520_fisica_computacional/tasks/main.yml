@@ -1,0 +1,20 @@
+---
+- name: Compiladores C, C++, Fortran y xmgrace
+  ansible.builtin.include_role:
+    name: syspkgs
+  vars:
+    syspkgs_names: "{{ asig_800520_fisica_computacional_syspkgs }}"
+
+- name: Entorno Python de Física Computacional
+  ansible.builtin.include_role:
+    name: python
+    tasks_from: venv
+  vars:
+    python_venv_name: 800520_fisica_computacional
+    python_venv_packages: "{{ asig_800520_fisica_computacional_pypkgs }}"
+    python_venv_jupyter_kernel: true
+    python_venv_display_name: "Física Computacional (Python {{ python_default }})"
+
+- name: Julia
+  ansible.builtin.include_role:
+    name: julia

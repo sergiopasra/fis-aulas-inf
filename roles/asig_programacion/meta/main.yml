@@ -1,5 +1,0 @@
----
-# Comunes necesarios (se ejecutan una sola vez por máquina)
-dependencies:
-  - role: base
-  - role: python

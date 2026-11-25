@@ -35,10 +35,10 @@ aulas-update | tee /tmp/run2.log
 sed "s/\x1b\[[0-9;]*m//g" /tmp/run2.log | grep -Eq "localhost +: ok=[0-9]+ +changed=0 +unreachable=0 +failed=0" \
     || { echo "FALLO: la segunda ejecución no es idempotente"; exit 1; }
 echo "######## COMPROBACIONES ########"
-/opt/aulas/venvs/metodos_numericos/bin/python -c "import numpy, scipy, matplotlib; print('numpy', numpy.__version__)"
-/opt/aulas/venvs/programacion/bin/python -V
+/opt/aulas/venvs/800520_fisica_computacional/bin/python -c "import numpy, scipy, matplotlib; print('numpy', numpy.__version__)"
 ls /usr/local/share/jupyter/kernels
-command -v code gfortran gnuplot
+julia -e 'println("julia ", VERSION)'
+command -v gcc g++ gfortran xmgrace
 SH
 
 rc=0

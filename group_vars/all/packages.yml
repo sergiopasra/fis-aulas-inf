@@ -12,18 +12,24 @@ pkg_map:
   build-tools:
     Debian: [build-essential]
     RedHat: [gcc, gcc-c++, make]
+  gcc:
+    Debian: gcc
+    RedHat: gcc
+  g++:
+    Debian: g++
+    RedHat: gcc-c++
   gfortran:
     Debian: gfortran
     RedHat: gcc-gfortran
   lapack-dev:
     Debian: [liblapack-dev, libblas-dev]
     RedHat: [lapack-devel, blas-devel]
-  gnuplot:
-    Debian: gnuplot
-    RedHat: gnuplot
   ssl-dev:
     Debian: libssl-dev
     RedHat: openssl-devel
   python3-venv:
     Debian: python3-venv
     RedHat: []
+  xmgrace:              # en RedHat viene de EPEL (lo activa el rol base)
+    Debian: grace
+    RedHat: grace

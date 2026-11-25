@@ -1,8 +1,0 @@
----
-asig_programacion_syspkgs:
-  - build-tools
-asig_programacion_python: "3.13"
-asig_programacion_pypkgs:
-  - pytest
-  - ruff
-  - ipython

@@ -1,0 +1,44 @@
+---
+# Julia desde los binarios oficiales (no está en los repos de Ubuntu ni RHEL).
+# Versión fijada en group_vars/all/main.yml (julia_version).
+- name: Comprobar si ya está instalada Julia {{ julia_version }}
+  ansible.builtin.stat:
+    path: "{{ julia_dir }}/bin/julia"
+  register: julia_bin
+
+- name: Descargar e instalar Julia {{ julia_version }}
+  when: not julia_bin.stat.exists
+  block:
+    - name: Descargar Julia {{ julia_version }}
+      ansible.builtin.get_url:
+        url: "{{ julia_url }}"
+        checksum: "sha256:{{ julia_checksums_url }}"
+        dest: "/tmp/{{ julia_tarball }}"
+        mode: "0644"
+
+    - name: Directorio de Julia
+      ansible.builtin.file:
+        path: "{{ julia_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Desempaquetar Julia
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ julia_tarball }}"
+        dest: "{{ julia_dir }}"
+        remote_src: true
+        extra_opts: [--strip-components=1]
+  always:
+    - name: Borrar el tarball de Julia
+      ansible.builtin.file:
+        path: "/tmp/{{ julia_tarball }}"
+        state: absent
+
+- name: Enlazar julia en /usr/local/bin
+  ansible.builtin.file:
+    src: "{{ julia_dir }}/bin/julia"
+    dest: /usr/local/bin/julia
+    state: link
+    force: true

@@ -5,7 +5,7 @@
 #       name: python
 #       tasks_from: venv
 #     vars:
-#       python_venv_name: metodos
+#       python_venv_name: 800520_fisica_computacional
 #       python_venv_python: "3.12"            # opcional (python_default)
 #       python_venv_packages: [numpy, scipy]  # admite especificadores: "numpy>=2"
 #       python_venv_jupyter_kernel: true      # opcional

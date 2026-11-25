@@ -1,0 +1,7 @@
+---
+julia_arch: "{{ {'x86_64': 'x64', 'aarch64': 'aarch64'}[ansible_facts['architecture']] }}"
+julia_minor: "{{ julia_version.split('.')[:2] | join('.') }}"
+julia_tarball: "julia-{{ julia_version }}-linux-{{ ansible_facts['architecture'] }}.tar.gz"
+julia_url: "https://julialang-s3.julialang.org/bin/linux/{{ julia_arch }}/{{ julia_minor }}/{{ julia_tarball }}"
+julia_checksums_url: "https://julialang-s3.julialang.org/bin/checksums/julia-{{ julia_version }}.sha256"
+julia_dir: "{{ aulas_root }}/julia-{{ julia_version }}"

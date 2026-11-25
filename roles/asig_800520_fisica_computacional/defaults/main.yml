@@ -1,0 +1,13 @@
+---
+# 800520 - Física Computacional
+# Paquetes del sistema (nombres lógicos, ver group_vars/all/packages.yml)
+asig_800520_fisica_computacional_syspkgs:
+  - gcc
+  - g++
+  - gfortran
+  - xmgrace
+# Entorno Python de la asignatura (sin versiones fijadas)
+asig_800520_fisica_computacional_pypkgs:
+  - numpy
+  - scipy
+  - matplotlib

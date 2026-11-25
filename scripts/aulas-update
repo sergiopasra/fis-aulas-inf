@@ -2,7 +2,7 @@
 # Descarga la última versión de los playbooks y los aplica en esta máquina.
 # Uso:  sudo aulas-update [opciones extra de ansible-pull]
 #   sudo aulas-update                              # todo
-#   sudo aulas-update --tags asig_metodos_numericos  # solo una asignatura
+#   sudo aulas-update --tags asig_800520_fisica_computacional  # solo una asignatura
 #   sudo aulas-update --check --diff               # simulación
 set -euo pipefail
 

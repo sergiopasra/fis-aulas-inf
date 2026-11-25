@@ -3,4 +3,5 @@ tests/logs/
 collections/ansible_collections/*/*/.git
 # Nunca subir claves
 *_key
+*_key.pub
 *.pem
