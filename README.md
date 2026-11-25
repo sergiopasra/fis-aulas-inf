@@ -91,16 +91,18 @@ ansible-playbook site.yml --tags asig_800520_fisica_computacional            # u
 
 ## Modo pull (VM)
 
-1. Genera una clave **solo para este repo**: `ssh-keygen -t ed25519 -N '' -f aulas_deploy_key`
-   y añade `aulas_deploy_key.pub` como *deploy key* de **solo lectura** en el servidor git.
-2. Copia a la VM `scripts/bootstrap-pull.sh`, `scripts/aulas-update` y la clave privada, y ejecuta una vez:
+El repositorio es público y se clona por HTTPS, así que no hace falta ninguna
+credencial (muchas redes bloquean el SSH saliente, incluso por el puerto 443).
+
+1. Copia a la VM `scripts/bootstrap-pull.sh` y `scripts/aulas-update` (en el mismo
+   directorio) y ejecuta una vez:
    ```bash
-   sudo ./bootstrap-pull.sh git@git.example.es:aulas/aulas_inf.git ./aulas_deploy_key main
-   rm ./aulas_deploy_key
+   sudo ./bootstrap-pull.sh
    ```
-   Instala git, uv y `ansible-core` aislado en `/opt/aulas/tools`, guarda la clave en
-   `/etc/aulas/deploy_key` y la configuración en `/etc/aulas/pull.conf`.
-3. Cada vez que se quiera actualizar:
+   Instala git, uv y `ansible-core` aislado en `/opt/aulas/tools`, guarda la
+   configuración en `/etc/aulas/pull.conf` e instala `aulas-update`. Admite otra URL
+   y rama: `sudo ./bootstrap-pull.sh <repo_url> [rama]`.
+2. Cada vez que se quiera actualizar:
    ```bash
    sudo aulas-update                                # todo
    sudo aulas-update --tags asig_800520_fisica_computacional   # una asignatura
@@ -108,7 +110,11 @@ ansible-playbook site.yml --tags asig_800520_fisica_computacional            # u
    ```
    El registro queda en `/var/log/aulas-update.log`.
 
-No guardes secretos en este repositorio: cualquiera con root en la VM puede leer la deploy key.
+Como el repositorio es público, **no guardes en él ningún secreto**.
+
+Para un fork **privado** accesible por SSH, usa una *deploy key* de solo lectura:
+`sudo ./bootstrap-pull.sh -k ./deploy_key git@github.com:usuario/repo.git` (la clave se
+guarda en `/etc/aulas/deploy_key` y `aulas-update` la usa automáticamente).
 
 ## Pruebas
 

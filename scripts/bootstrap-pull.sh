@@ -1,25 +1,46 @@
 #!/usr/bin/env bash
 # Prepara una máquina (p.ej. la VM remota) para el modo pull.
 # Se ejecuta UNA vez, como root:
-#   sudo ./bootstrap-pull.sh <repo_url> <clave_privada_deploy> [rama]
-# Ejemplo:
-#   sudo ./bootstrap-pull.sh git@gitlab.example.es:aulas/aulas_inf.git ./aulas_deploy_key main
+#   sudo ./bootstrap-pull.sh                       # repo público por HTTPS (por defecto)
+#   sudo ./bootstrap-pull.sh [-k clave] [repo_url] [rama]
+# Ejemplos:
+#   sudo ./bootstrap-pull.sh
+#   sudo ./bootstrap-pull.sh https://github.com/sergiopasra/fis-aulas-inf.git main
+#   sudo ./bootstrap-pull.sh -k ./deploy_key git@github.com:usuario/repo-privado.git
 set -euo pipefail
 
+DEFAULT_REPO_URL="https://github.com/sergiopasra/fis-aulas-inf.git"
 UV_VERSION="0.13.9"
 ANSIBLE_CORE_VERSION="2.21.6"
 ANSIBLE_PYTHON="3.13"          # ansible-core >= 2.20 necesita Python >= 3.12 en el nodo de control
 AULAS_ROOT=/opt/aulas
 CONF_DIR=/etc/aulas
 
-usage() { echo "Uso: $0 <repo_url> <clave_privada_deploy> [rama]" >&2; exit 1; }
-[[ $# -ge 2 ]] || usage
-REPO_URL=$1
-KEY_SRC=$2
-BRANCH=${3:-main}
+usage() {
+    echo "Uso: $0 [-k clave_privada_deploy] [repo_url] [rama]" >&2
+    echo "  -k  solo para repositorios privados por SSH (git@...)" >&2
+    exit 1
+}
+KEY_SRC=""
+while getopts "k:h" opt; do
+    case $opt in
+        k) KEY_SRC=$OPTARG ;;
+        *) usage ;;
+    esac
+done
+shift $((OPTIND - 1))
+[[ $# -le 2 ]] || usage
+REPO_URL=${1:-$DEFAULT_REPO_URL}
+BRANCH=${2:-main}
 [[ $EUID -eq 0 ]] || { echo "Ejecutar como root" >&2; exit 1; }
-[[ -r $KEY_SRC ]] || { echo "No se puede leer la clave $KEY_SRC" >&2; exit 1; }
+if [[ -n $KEY_SRC && ! -r $KEY_SRC ]]; then
+    echo "No se puede leer la clave $KEY_SRC" >&2; exit 1
+fi
+if [[ -z $KEY_SRC && $REPO_URL != http* ]]; then
+    echo "AVISO: URL SSH sin clave (-k); solo funcionará si root ya tiene acceso." >&2
+fi
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+[[ -r ${SCRIPT_DIR}/aulas-update ]] || { echo "Falta aulas-update junto a este script" >&2; exit 1; }
 
 echo ">> Paquetes mínimos (git, curl, python3)"
 if command -v apt-get >/dev/null; then
@@ -61,7 +82,9 @@ UV_PYTHON_PREFERENCE=only-managed \
 
 echo ">> Configuración en ${CONF_DIR}"
 install -d -m 0700 "$CONF_DIR"
-install -m 0600 "$KEY_SRC" "${CONF_DIR}/deploy_key"
+if [[ -n $KEY_SRC ]]; then
+    install -m 0600 "$KEY_SRC" "${CONF_DIR}/deploy_key"
+fi
 cat > "${CONF_DIR}/pull.conf" <<CONF
 # Configuración de aulas-update (generada por bootstrap-pull.sh)
 REPO_URL="${REPO_URL}"

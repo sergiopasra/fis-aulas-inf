@@ -16,6 +16,10 @@ LOG=/var/log/aulas-update.log
 # shellcheck source=/dev/null
 source "$CONF"
 
+# La clave solo hace falta para repositorios privados por SSH
+KEY_OPTS=()
+[[ -r $KEY ]] && KEY_OPTS=(--private-key "$KEY" --accept-host-key)
+
 install -d -m 0700 "$(dirname "$DEST")"
 export PATH=/usr/local/bin:$PATH
 # ansible-pull limita internamente al hostname; evita avisos inocuos
@@ -28,8 +32,7 @@ export ANSIBLE_HOST_PATTERN_MISMATCH=ignore
         --url "$REPO_URL" \
         --checkout "$BRANCH" \
         --directory "$DEST" \
-        --private-key "$KEY" \
-        --accept-host-key \
+        "${KEY_OPTS[@]}" \
         --clean \
         --inventory localhost, \
         --limit localhost \

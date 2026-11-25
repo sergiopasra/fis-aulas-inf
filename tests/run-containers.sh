@@ -26,8 +26,7 @@ git -C "$SNAP" -c user.name=test -c user.email=test@localhost commit -qm snapsho
 read -r -d '' INNER <<'SH' || true
 set -euo pipefail
 git config --global --add safe.directory '*' 2>/dev/null || true
-touch /tmp/dummy_key
-/src/scripts/bootstrap-pull.sh file:///src /tmp/dummy_key main
+/src/scripts/bootstrap-pull.sh file:///src main
 echo "######## EJECUCIÓN 1 ########"
 aulas-update
 echo "######## EJECUCIÓN 2 (idempotencia) ########"
